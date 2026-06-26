@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Mini-démo pédagogique sur l'autofill, les formulaires, la vie privée et les informations visibles localement par une page web."
+    />
+    <title>Un simple formulaire peut déjà en dire beaucoup</title>
+
+    <!--
+      Démo statique : aucun backend, aucun tracking, aucun stockage.
+      Tailwind est chargé côté navigateur pour garder un projet très simple à héberger.
+      Les données du formulaire ne sont jamais envoyées.
+    -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <noscript>
+      <div class="noscript-message">
+        Cette démo a besoin de JavaScript pour afficher les informations visibles localement par le navigateur.
+      </div>
+    </noscript>
+
+    <div id="root"></div>
+
+    <!-- React côté navigateur, sans backend et sans build obligatoire. -->
+    <script type="module" src="./script.js"></script>
+  </body>
+</html>
