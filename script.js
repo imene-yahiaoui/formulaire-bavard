@@ -5,27 +5,22 @@ const h = React.createElement;
 
 const developerUrl = "https://www.imeneyahiaoui.com/";
 
-const tips = [
-  "Un bon formulaire ne demande pas plus que nécessaire.",
-  "Une donnée inutile collectée est une responsabilité en plus.",
-  "La transparence crée plus de confiance que la surprise.",
-  "La rapidité d’un formulaire ne suffit pas : il doit aussi être juste.",
-  "Avant de demander une information, il faut savoir pourquoi on la demande."
+const autofillFields = [
+  { label: "Email", name: "email", type: "email", autoComplete: "email" },
+  { label: "Téléphone", name: "tel", type: "tel", autoComplete: "tel" },
+  { label: "Entreprise", name: "organization", type: "text", autoComplete: "organization" },
+  { label: "Adresse", name: "street-address", type: "text", autoComplete: "street-address" },
+  { label: "Code postal", name: "postal-code", type: "text", autoComplete: "postal-code" },
+  { label: "Ville", name: "address-level2", type: "text", autoComplete: "address-level2" },
+  { label: "Pays", name: "country-name", type: "text", autoComplete: "country-name" }
 ];
 
-// Démo Autofill : ces champs existent dans le formulaire pour montrer ce que
-// le navigateur peut parfois compléter automatiquement. Ils ne sont jamais
-// envoyés, jamais stockés, jamais transmis à un backend.
-// Ils sont hors écran pour reproduire la mise en scène :
-// “l’utilisateur a seulement vu prénom + nom”.
-const autofillFields = [
-  { label: "Email", name: "email", type: "email", autoComplete: "email", icon: "✉️" },
-  { label: "Téléphone", name: "tel", type: "tel", autoComplete: "tel", icon: "📞" },
-  { label: "Entreprise / organisation", name: "organization", type: "text", autoComplete: "organization", icon: "🏢" },
-  { label: "Adresse", name: "street-address", type: "text", autoComplete: "street-address", icon: "📍" },
-  { label: "Code postal", name: "postal-code", type: "text", autoComplete: "postal-code", icon: "📮" },
-  { label: "Ville", name: "address-level2", type: "text", autoComplete: "address-level2", icon: "🏙️" },
-  { label: "Pays", name: "country-name", type: "text", autoComplete: "country-name", icon: "🌍" }
+const tips = [
+  "Demande seulement les infos vraiment utiles.",
+  "Explique pourquoi tu demandes une information.",
+  "Rends les champs facultatifs très clairs.",
+  "Laisse la personne vérifier avant d'envoyer.",
+  "Ne cache pas de champs qui peuvent être remplis automatiquement."
 ];
 
 function safeValue(value, fallback = "Non disponible") {
@@ -41,44 +36,39 @@ function getFormValue(form, name) {
   return safeValue(element?.value, "");
 }
 
-function getDoNotTrackStatus() {
-  const value = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
-
-  if (value === "1" || value === "yes") return "Activé";
-  if (value === "0" || value === "no") return "Désactivé";
-
-  return "Non disponible";
-}
-
 function detectBrowserFromUserAgent(userAgent) {
   const ua = userAgent.toLowerCase();
 
   if (ua.includes("edg/")) return "Microsoft Edge";
-  if (ua.includes("firefox/")) return "Mozilla Firefox";
+  if (ua.includes("firefox/")) return "Firefox";
   if (ua.includes("samsungbrowser/")) return "Samsung Internet";
   if (ua.includes("opr/") || ua.includes("opera")) return "Opera";
-  if (ua.includes("chrome/") && !ua.includes("edg/")) return "Google Chrome ou Chromium";
+  if (ua.includes("chrome/") && !ua.includes("edg/")) return "Chrome ou Chromium";
   if (ua.includes("safari/") && !ua.includes("chrome/")) return "Safari";
 
-  return "Navigateur non identifié précisément";
+  return "Navigateur non reconnu";
 }
 
-function collectVisibleBrowserInfo() {
+function collectBrowserInfo() {
   const userAgent = navigator.userAgent;
 
   return [
-    { label: "Langue du navigateur", value: safeValue(navigator.language), icon: "🗣️" },
-    { label: "Navigateur détecté", value: detectBrowserFromUserAgent(userAgent), icon: "🧭" },
-    { label: "User agent", value: safeValue(userAgent), icon: "🪪" },
-    { label: "Plateforme", value: safeValue(navigator.platform), icon: "💻" },
-    { label: "Taille de l’écran", value: `${window.screen.width} × ${window.screen.height}px`, icon: "🖥️" },
-    { label: "Taille de la fenêtre", value: `${window.innerWidth} × ${window.innerHeight}px`, icon: "📐" },
-    { label: "Fuseau horaire", value: safeValue(Intl.DateTimeFormat().resolvedOptions().timeZone), icon: "🕒" },
-    { label: "URL actuelle", value: safeValue(window.location.href), icon: "🔗" },
-    { label: "Page précédente", value: safeValue(document.referrer, "Non disponible ou accès direct"), icon: "↩️" },
-    { label: "Statut réseau", value: navigator.onLine ? "En ligne" : "Hors ligne", icon: "📶" },
-    { label: "Cookies activés", value: navigator.cookieEnabled ? "Oui" : "Non", icon: "🍪" },
-    { label: "Do Not Track", value: getDoNotTrackStatus(), icon: "🚫" }
+    { label: "Langue", value: safeValue(navigator.language), helper: "La langue choisie dans ton navigateur." },
+    { label: "Navigateur", value: detectBrowserFromUserAgent(userAgent), helper: "La famille du navigateur utilisé." },
+    { label: "Appareil", value: safeValue(navigator.platform), helper: "Une indication générale sur l'appareil." },
+    { label: "Écran", value: `${window.screen.width} x ${window.screen.height}px`, helper: "La taille de l'écran." },
+    { label: "Fenetre", value: `${window.innerWidth} x ${window.innerHeight}px`, helper: "La taille de cette page ouverte." },
+    {
+      label: "Fuseau horaire",
+      value: safeValue(Intl.DateTimeFormat().resolvedOptions().timeZone),
+      helper: "La zone horaire configurée."
+    },
+    {
+      label: "Page précédente",
+      value: safeValue(document.referrer, "Accès direct ou non disponible"),
+      helper: "Parfois, une page sait d'où tu viens."
+    },
+    { label: "Connexion", value: navigator.onLine ? "En ligne" : "Hors ligne", helper: "État réseau visible." }
   ];
 }
 
@@ -86,17 +76,15 @@ function collectAutofillInfo(form) {
   const filledRows = autofillFields
     .map((field) => ({
       label: field.label,
-      value: getFormValue(form, field.name),
-      icon: field.icon
+      value: getFormValue(form, field.name)
     }))
     .filter((row) => row.value !== "");
 
   if (filledRows.length === 0) {
     return [
       {
-        label: "Autofill extra",
-        value: "Aucune donnée supplémentaire remplie par le navigateur sur ce test.",
-        icon: "😇"
+        label: "Aucune info en plus",
+        value: "Sur cet essai, le navigateur n'a pas ajouté d'autre information."
       }
     ];
   }
@@ -104,70 +92,28 @@ function collectAutofillInfo(form) {
   return filledRows;
 }
 
-function getVerdict(count) {
+function getMessage(count) {
   if (count === 0) {
     return {
-      tone: "calm",
-      emoji: "😇",
-      title: "Aujourd’hui, le navigateur a gardé ses secrets.",
-      text: "Aucune info Autofill en plus n’a été détectée. L’inspecteur Data range sa loupe… pour l’instant."
+      tone: "quiet",
+      title: "Rien d'autre n'a été ajouté cette fois.",
+      text: "Le navigateur n'a pas rempli les champs cachés de cette démo. Tu peux refaire le test avec une suggestion de remplissage automatique."
     };
   }
 
-  if (count <= 2) {
+  if (count === 1) {
     return {
-      tone: "medium",
-      emoji: "🧐",
-      title: "Petit bonus dans la poche du formulaire.",
-      text: `Le navigateur a ajouté ${count} information${count > 1 ? "s" : ""} en plus. Pas de panique : ici, ça reste local et affiché pour la démo.`
+      tone: "notice",
+      title: "Une information en plus est apparue.",
+      text: "Tu voyais seulement deux cases, mais la page peut lire une information ajoutée par le navigateur."
     };
   }
 
   return {
-    tone: "spicy",
-    emoji: "🚨",
-    title: "Plot twist : le formulaire avait des poches !",
-    text: `Tu voyais 2 champs, mais le navigateur en a rempli ${count} de plus. Le formulaire n’a rien envoyé, mais il a beaucoup observé.`
+    tone: "alert",
+    title: `${count} informations en plus sont apparues.`,
+    text: "C'est le point important : un formulaire peut recevoir plus d'infos que ce que la personne pense avoir donné."
   };
-}
-
-function Mascot() {
-  return h(
-    "div",
-    { className: "mascot", "aria-hidden": "true" },
-    h("div", { className: "mascot-bubble" }, "Inspecteur data"),
-    h("div", { className: "mascot-hat" }),
-    h("div", { className: "mascot-body" }),
-    h("div", { className: "mascot-eye left" }),
-    h("div", { className: "mascot-eye right" }),
-    h("div", { className: "mascot-smile" }),
-    h("div", { className: "magnifier" })
-  );
-}
-
-function Confetti() {
-  return h(
-    "div",
-    { className: "confetti", "aria-hidden": "true" },
-    Array.from({ length: 14 }).map((_, index) => h("span", { key: index }))
-  );
-}
-
-function DataRows({ rows, playful = false }) {
-  return h(
-    "dl",
-    { className: playful ? "data-list playful-list" : "data-list" },
-    rows.map((row) => {
-      const isEmpty = row.value.includes("Non disponible") || row.value.includes("Aucune donnée");
-
-      return h(
-        "div",
-        { className: isEmpty ? "data-row is-empty" : "data-row has-value", key: row.label },
-        h("dt", null, h("span", { className: "row-icon", "aria-hidden": "true" }, row.icon || "•"), row.label),
-        h("dd", { className: isEmpty ? "empty-value" : undefined }, row.value)
-      );
-    })
-  );
 }
 
 function GhostAutofillFields() {
@@ -193,69 +139,68 @@ function GhostAutofillFields() {
   );
 }
 
-function StatCard({ value, label, tone }) {
+function InfoRows({ rows, simple = false }) {
   return h(
-    "div",
-    { className: `stat-card ${tone || ""}` },
-    h("strong", null, value),
-    h("span", null, label)
-  );
-}
-
-function VerdictCard({ count }) {
-  const verdict = getVerdict(count);
-
-  return h(
-    "div",
-    { className: `verdict-card ${verdict.tone}` },
-    h("div", { className: "verdict-emoji", "aria-hidden": "true" }, verdict.emoji),
-    h(
-      "div",
-      null,
-      h("span", { className: "verdict-kicker" }, "Verdict de l’inspecteur"),
-      h("h3", null, verdict.title),
-      h("p", null, verdict.text)
-    )
-  );
-}
-
-function MiniComic() {
-  const steps = [
-    { icon: "👀", title: "À l’écran", text: "Tu vois 2 champs." },
-    { icon: "🪄", title: "Autofill", text: "Le navigateur peut compléter." },
-    { icon: "🕵️", title: "Résultat", text: "La page lit ce qui est écrit." }
-  ];
-
-  return h(
-    "div",
-    { className: "mini-comic", "aria-label": "Résumé de la démonstration" },
-    steps.map((step) =>
+    "dl",
+    { className: simple ? "info-list simple" : "info-list" },
+    rows.map((row) =>
       h(
         "div",
-        { className: "comic-bubble", key: step.title },
-        h("span", { "aria-hidden": "true" }, step.icon),
-        h("strong", null, step.title),
-        h("p", null, step.text)
+        { className: "info-row", key: row.label },
+        h("dt", null, row.label),
+        h(
+          "dd",
+          null,
+          h("strong", null, row.value),
+          row.helper ? h("span", null, row.helper) : null
+        )
       )
     )
   );
 }
 
-function DeveloperFooter() {
+function StepList() {
+  const steps = [
+    {
+      number: "1",
+      title: "Tu vois deux cases",
+      text: "La page te demande seulement ton prénom et ton nom."
+    },
+    {
+      number: "2",
+      title: "Le navigateur aide",
+      text: "Avec Autofill, il peut proposer email, téléphone ou adresse."
+    },
+    {
+      number: "3",
+      title: "La page peut lire",
+      text: "Si ces infos sont ajoutées au formulaire, la page peut les voir."
+    }
+  ];
+
   return h(
-    "footer",
-    { className: "site-footer" },
-    h("span", null, "Créé avec humour et pédagogie par 💜 "),
-    h(
-      "a",
-      {
-        href: developerUrl,
-        target: "_blank",
-        rel: "noopener noreferrer",
-        "aria-label": "Voir le site de Imene Yahiaoui"
-      },
-      "Imene Yahiaoui"
+    "ol",
+    { className: "step-list", "aria-label": "Comment fonctionne la demo" },
+    steps.map((step) =>
+      h(
+        "li",
+        { key: step.number },
+        h("span", null, step.number),
+        h("div", null, h("strong", null, step.title), h("p", null, step.text))
+      )
     )
+  );
+}
+
+function ResultBanner({ count }) {
+  const message = getMessage(count);
+
+  return h(
+    "div",
+    { className: `result-banner ${message.tone}` },
+    h("p", null, "Résultat de la démo"),
+    h("h2", null, message.title),
+    h("span", null, message.text)
   );
 }
 
@@ -274,19 +219,17 @@ function App() {
 
     const form = formRef.current;
     const autofillRows = collectAutofillInfo(form);
-    const filledAutofillCount = autofillRows.filter((row) => !row.value.includes("Aucune donnée")).length;
+    const filledAutofillCount = autofillRows.filter((row) => row.label !== "Aucune info en plus").length;
 
-    const snapshot = {
+    setResult({
       typed: [
-        { label: "Prénom", value: safeValue(getFormValue(form, "given-name"), "Non renseigné"), icon: "👤" },
-        { label: "Nom", value: safeValue(getFormValue(form, "family-name"), "Non renseigné"), icon: "🪪" }
+        { label: "Prénom", value: safeValue(getFormValue(form, "given-name"), "Non renseigné") },
+        { label: "Nom", value: safeValue(getFormValue(form, "family-name"), "Non renseigné") }
       ],
       autofill: autofillRows,
-      technical: collectVisibleBrowserInfo(),
+      technical: collectBrowserInfo(),
       filledAutofillCount
-    };
-
-    setResult(snapshot);
+    });
 
     window.requestAnimationFrame(() => {
       resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -308,123 +251,79 @@ function App() {
     null,
     h(
       "main",
-      { className: "app-shell" },
+      { className: "page-shell" },
       h(
         "section",
-        { className: "hero-grid", "aria-labelledby": "main-title" },
+        { className: "intro", "aria-labelledby": "main-title" },
         h(
           "div",
-          { className: "hero-panel glass-card" },
-          h(
-            "div",
-            { className: "badge" },
-            h("span", { className: "badge-dot", "aria-hidden": "true" }),
-            "Démo locale · zéro stockage · zéro tracking"
-          ),
-          h(
-            "h1",
-            { id: "main-title", className: "hero-title" },
-            h("span", null, "Un simple formulaire"),
-            h("span", null, "peut déjà en dire beaucoup.")
-          ),
+          { className: "intro-copy" },
+          h("p", { className: "eyebrow" }, "Démo vie privée"),
+          h("h1", { id: "main-title" }, "Un formulaire peut lire plus que ce que tu vois."),
           h(
             "p",
-            { className: "hero-subtitle" },
-            "Cette démo demande seulement votre prénom et votre nom. Au clic, elle montre aussi les informations techniques que votre navigateur rend visibles à une page web."
+            { className: "lead" },
+            "Ici, tu remplis seulement deux cases. Mais le remplissage automatique du navigateur peut ajouter d'autres infos dans le formulaire."
           ),
           h(
             "div",
-            { className: "privacy-note", role: "note", "aria-label": "Message de confidentialité" },
-            h("div", { className: "note-icon", "aria-hidden": "true" }, "🔒"),
-            h(
-              "p",
-              { className: "m-0" },
-              h("strong", null, "Cette démo n’envoie rien et ne stocke rien."),
-              h("br"),
-              "Elle affiche uniquement ce que cette page peut voir localement."
-            )
+            { className: "plain-note", role: "note" },
+            h("strong", null, "Important : rien n'est envoyé."),
+            h("span", null, "Cette page montre seulement ce qui est visible dans ton navigateur, pour comprendre le risque.")
           ),
-          h(
-            "div",
-            { className: "impact-note" },
-            h("span", { "aria-hidden": "true" }, "🎭"),
-            h(
-              "p",
-              null,
-              "Mise en scène : l’écran montre deux champs. Le résultat révèle aussi ce que le remplissage automatique du navigateur a éventuellement ajouté au formulaire."
-            )
-          )
+          h(StepList)
         ),
         h(
           "aside",
-          { className: "form-panel glass-card", "aria-label": "Formulaire de démonstration" },
+          { className: "demo-card", "aria-label": "Formulaire de test" },
+          h("div", { className: "card-label" }, "Test rapide"),
+          h("h2", null, "Remplis comme sur un vrai site"),
           h(
-            "div",
+            "p",
             null,
-            h("div", { className: "mascot-wrap" }, h(Mascot)),
-            h("h2", { className: "form-title" }, "Petit formulaire, grande discussion."),
+            "Clique dans une case. Si ton navigateur propose une fiche automatique, choisis-la, puis regarde le résultat."
+          ),
+          h(
+            "form",
+            { ref: formRef, className: "demo-form", onSubmit: handleSubmit, autoComplete: "on" },
             h(
-              "p",
-              { className: "form-copy" },
-              "Deux champs visibles. Une suggestion Autofill. Et parfois… le navigateur complète plus que prévu."
+              "div",
+              { className: "field-group" },
+              h("label", { htmlFor: "given-name" }, "Prénom"),
+              h("input", {
+                id: "given-name",
+                name: "given-name",
+                type: "text",
+                autoComplete: "given-name",
+                placeholder: "Exemple : Sofia"
+              })
             ),
             h(
-              "form",
-              { ref: formRef, className: "demo-form", onSubmit: handleSubmit, autoComplete: "on" },
-              h(
-                "div",
-                { className: "field-group" },
-                h("label", { htmlFor: "given-name" }, "Prénom"),
-                h("input", {
-                  id: "given-name",
-                  name: "given-name",
-                  type: "text",
-                  autoComplete: "given-name",
-                  placeholder: "Ex : Sofia"
-                })
-              ),
-              h(
-                "div",
-                { className: "field-group" },
-                h("label", { htmlFor: "family-name" }, "Nom"),
-                h("input", {
-                  id: "family-name",
-                  name: "family-name",
-                  type: "text",
-                  autoComplete: "family-name",
-                  placeholder: "Ex : Martin"
-                })
-              ),
-              h(GhostAutofillFields),
-              h(
-                "div",
-                { className: "button-row" },
-                h(
-                  "button",
-                  { className: "submit-button", type: "submit" },
-                  h("span", null, "Voir ce que la page peut lire"),
-                  h("span", { "aria-hidden": "true" }, "→")
-                ),
-                h(
-                  "button",
-                  { className: "reset-button", type: "button", onClick: handleReset },
-                  h("span", { "aria-hidden": "true" }, "↺"),
-                  "Réinitialiser"
-                )
-              ),
-              h(
-                "p",
-                { className: "autofill-helper" },
-                "Astuce : clique dans Prénom ou Nom, choisis une suggestion du navigateur, puis regarde le rapport d’enquête."
-              )
+              "div",
+              { className: "field-group" },
+              h("label", { htmlFor: "family-name" }, "Nom"),
+              h("input", {
+                id: "family-name",
+                name: "family-name",
+                type: "text",
+                autoComplete: "family-name",
+                placeholder: "Exemple : Martin"
+              })
+            ),
+            h(GhostAutofillFields),
+            h(
+              "div",
+              { className: "button-row" },
+              h("button", { className: "primary-button", type: "submit" }, "Voir ce que la page lit", h("span", null, "->")),
+              h("button", { className: "secondary-button", type: "button", onClick: handleReset }, "Recommencer")
             )
           ),
           h(
             "ul",
-            { className: "micro-list", "aria-label": "Garanties de la démo" },
-            h("li", null, "Aucun serveur appelé au clic."),
+            { className: "trust-list", "aria-label": "Garanties de la demo" },
+            h("li", null, "Aucun serveur contacté."),
             h("li", null, "Aucun cookie créé."),
-            h("li", null, "Aucun localStorage, sessionStorage ou IndexedDB.")
+            h("li", null, "Aucun stockage dans ton navigateur.")
           )
         )
       ),
@@ -433,116 +332,86 @@ function App() {
           "section",
           {
             ref: resultRef,
-            className: "result-section glass-card",
+            className: "results",
             "aria-live": "polite",
             "aria-labelledby": "result-title"
           },
-          h(Confetti),
+          h(ResultBanner, { count: result.filledAutofillCount }),
           h(
             "div",
-            { className: "case-label" },
-            h("span", null, "Rapport d’enquête local"),
-            h("strong", null, "Autofill sous observation")
+            { className: "summary-strip", "aria-label": "Resume du test" },
+            h("div", null, h("strong", null, "2"), h("span", null, "cases visibles")),
+            h("div", null, h("strong", null, result.filledAutofillCount), h("span", null, "infos ajoutées")),
+            h("div", null, h("strong", null, "0"), h("span", null, "envoi serveur"))
           ),
           h(
             "div",
-            { className: "result-header" },
+            { className: "explain-box" },
+            h("h3", null, "A retenir"),
             h(
-              "div",
+              "p",
               null,
-              h("h2", { id: "result-title", className: "result-title" }, "Ce que cette page voit vraiment"),
-              h(
-                "p",
-                { className: "result-joke" },
-                "Votre navigateur a parlé… mais promis, il n’a rien envoyé. L’inspecteur Data a juste pris des notes sur place."
-              )
-            ),
-            h(
-              "div",
-              { className: "result-actions" },
-              h(
-                "div",
-                { className: "pill", "aria-label": "Démo locale confirmée" },
-                h("span", { "aria-hidden": "true" }, "✅"),
-                "100% affichage local"
-              ),
-              h(
-                "button",
-                { className: "reset-button mini", type: "button", onClick: handleReset },
-                h("span", { "aria-hidden": "true" }, "↺"),
-                "Recommencer"
-              )
+              "Si un navigateur remplit un formulaire tout seul, il peut mettre des informations dans des champs que tu ne regardes pas vraiment. Avant d'envoyer un formulaire, il vaut mieux vérifier ce qui est demandé."
             )
           ),
-          h(MiniComic),
           h(
             "div",
-            { className: "result-stats", "aria-label": "Résumé du résultat" },
-            h(StatCard, { value: "2", label: "champs visibles", tone: "blue" }),
-            h(StatCard, { value: result.filledAutofillCount, label: "infos Autofill détectées", tone: "yellow" }),
-            h(StatCard, { value: "0", label: "requête envoyée au clic", tone: "green" })
-          ),
-          h(VerdictCard, { count: result.filledAutofillCount }),
-          h(
-            "div",
-            { className: "warning-card" },
-            h("strong", null, "Le twist pédagogique : "),
-            "la personne pense souvent avoir rempli seulement prénom + nom. Mais si le navigateur ajoute d’autres valeurs dans le formulaire, la page peut les lire. Ici, rien ne sort du navigateur : c’est juste affiché pour comprendre."
-          ),
-          h(
-            "div",
-            { className: "result-grid result-grid-three" },
+            { className: "result-grid" },
             h(
               "article",
-              { className: "data-card visible-card" },
-              h("div", { className: "card-sticker" }, "ce que tu as vu"),
-              h("h3", null, "Informations visibles saisies"),
-              h(DataRows, { rows: result.typed })
+              { className: "result-card saw" },
+              h("p", { className: "card-label" }, "Ce que tu as vu"),
+              h("h3", null, "Les infos tapées"),
+              h(InfoRows, { rows: result.typed, simple: true })
             ),
             h(
               "article",
-              { className: "data-card highlight-card" },
-              h("div", { className: "card-sticker surprise" }, "plot twist"),
-              h("div", { className: "evidence-tape" }, "Données entrées par la petite porte"),
-              h("h3", null, "Informations ajoutées par Autofill"),
-              h("p", { className: "card-intro" }, "Champs surveillés pour la démo : ", hiddenAutofillLabels, "."),
-              h(DataRows, { rows: result.autofill, playful: true })
+              { className: "result-card extra" },
+              h("p", { className: "card-label" }, "Ce qui peut se cacher"),
+              h("h3", null, "Infos ajoutées par Autofill"),
+              h("p", { className: "small-copy" }, "Champs testés : ", hiddenAutofillLabels, "."),
+              h(InfoRows, { rows: result.autofill, simple: true })
             ),
             h(
               "article",
-              { className: "data-card tech-card" },
-              h("div", { className: "card-sticker" }, "fiche technique"),
-              h("h3", null, "Informations techniques visibles"),
-              h(DataRows, { rows: result.technical })
+              { className: "result-card browser" },
+              h("p", { className: "card-label" }, "Infos du navigateur"),
+              h("h3", null, "Ce qu'une page peut déjà connaître"),
+              h(InfoRows, { rows: result.technical })
             )
           ),
           h(
             "section",
-            { className: "tips-section", "aria-labelledby": "tips-title" },
-            h("h3", { id: "tips-title" }, "Conseils pour créer des formulaires plus justes"),
+            { className: "tips", "aria-labelledby": "tips-title" },
+            h("h3", { id: "tips-title" }, "Pour faire des formulaires plus respectueux"),
             h(
               "ul",
-              { className: "tips-grid" },
-              tips.map((tip, index) =>
-                h(
-                  "li",
-                  { className: "tip-card", key: tip },
-                  h("span", { className: "tip-number", "aria-hidden": "true" }, index + 1),
-                  tip
-                )
-              )
+              null,
+              tips.map((tip) => h("li", { key: tip }, tip))
             )
           ),
           h(
-            "p",
-            { className: "footer-note" },
-            "Côté code, le bouton ne lance aucun ",
-            h("code", null, "fetch"),
-            ", aucune requête API, aucun analytics et aucun stockage navigateur. Les données sont seulement gardées en mémoire React le temps de l’affichage."
+            "div",
+            { className: "bottom-actions" },
+            h("button", { className: "secondary-button", type: "button", onClick: handleReset }, "Refaire le test")
           )
         )
     ),
-    h(DeveloperFooter)
+    h(
+      "footer",
+      { className: "site-footer" },
+      h("span", null, "Démo créée par "),
+      h(
+        "a",
+        {
+          href: developerUrl,
+          target: "_blank",
+          rel: "noopener noreferrer",
+          "aria-label": "Voir le site de Imene Yahiaoui"
+        },
+        "Imene Yahiaoui"
+      )
+    )
   );
 }
 
